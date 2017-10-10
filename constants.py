@@ -22,7 +22,7 @@ VERTICAL   = "v"
 HORIZONTAL = "h"
 
 ANIMATION_FPS = 30
-SHOOT_FPS     = 5
+SHOOT_FPS     = 2
 PLACE_FPS     = 2
 
 class Color:

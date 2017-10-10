@@ -74,7 +74,11 @@ def main():
 
   log("{} is the winner".format(players[winner].name))
   
-  input()
+  while True:
+    for event in pygame.event.get():
+      if event.type == QUIT:
+        running = False
+    CLOCK.tick(15)
   
   pygame.quit()
   sock.close()
@@ -85,6 +89,9 @@ def do_turn(players):
       #have the player make their shots until they miss
       while True:
         shot = p.get_shot()
+        
+        shoot_animation(players, i, shot, ANIMATION_FPS)
+        
         result = p.board.shoot(shot[0], shot[1])
         p.notify(result)
         p.opponent.notify("OPPONENT SHOT {},{},{}".format(shot[0], shot[1], result))
@@ -111,8 +118,9 @@ def display(players, fps, offset=0):
   for i, p in enumerate(players):
     direction = 1 if i == 0 else -1
     p.board.draw(TILE_SIZE+(TILE_SIZE+TILE_SIZE*NUM_ROWS)*i+(TILE_SIZE+TILE_SIZE*NUM_ROWS)*offset*direction, TILE_SIZE)
-  pygame.display.flip()
-  CLOCK.tick(fps)
+  if fps > 0:
+    pygame.display.flip()
+    CLOCK.tick(fps)
   
 def bg(players):
   global PLAYER_1, PLAYER_1_RECT, PLAYER_2, PLAYER_2_RECT
@@ -122,18 +130,58 @@ def bg(players):
   if PLAYER_1 is None:
     PLAYER_1 = FONT.render(players[0].name, True, Color.RED)
     PLAYER_1_RECT = PLAYER_1.get_rect()
+    PLAYER_1_RECT.centerx = TILE_SIZE+(TILE_SIZE*NUM_ROWS)//2
+    PLAYER_1_RECT.centery = TILE_SIZE//2
   if PLAYER_2 is None:
     PLAYER_2 = FONT.render(players[1].name, True, Color.BLUE)
     PLAYER_2_RECT = PLAYER_2.get_rect()
+    PLAYER_2_RECT.centerx = TILE_SIZE*2+(TILE_SIZE*NUM_ROWS)+(TILE_SIZE*NUM_ROWS)//2
+    PLAYER_2_RECT.centery = TILE_SIZE//2
   
-  PLAYER_1_RECT.centerx = TILE_SIZE+(TILE_SIZE*NUM_ROWS)//2
-  PLAYER_1_RECT.centery = TILE_SIZE//2
+  
   SCREEN.blit(PLAYER_1, PLAYER_1_RECT)
-  PLAYER_2_RECT.centerx = TILE_SIZE*2+(TILE_SIZE*NUM_ROWS)+(TILE_SIZE*NUM_ROWS)//2
-  PLAYER_2_RECT.centery = TILE_SIZE//2
   SCREEN.blit(PLAYER_2, PLAYER_2_RECT)
+
+def shoot_animation(players, i, shot, fps):
+  for event in pygame.event.get():
+      if event.type == QUIT:
+        running = False
+    CLOCK.tick(15)
+
+  #get the boards x, y position
+  xpos, ypos = TILE_SIZE+(TILE_SIZE+TILE_SIZE*NUM_ROWS)*i, TILE_SIZE
+
+  #the cell were shooting
+  x, y = shot
+
+  #the coordinates of the target
+  end = (xpos+x*TILE_SIZE+TILE_SIZE//2, 
+         ypos+y*TILE_SIZE+TILE_SIZE//2)
   
+  #This is where we are starting the shot from
+  start = (-HIT_MARK_RADIUS, SCREEN_HEIGHT//2) if i == 1 else (SCREEN_WIDTH+HIT_MARK_RADIUS, SCREEN_HEIGHT//2)
+  
+  #our lovely animation
+  for x in range(fps+1):
+    percent = x/fps
+    rad = (-12*percent**2+12*percent+1) * HIT_MARK_RADIUS
+    pos = (int((end[0]-start[0])*percent+start[0]), int((end[1]-start[1])*percent+start[1]))
+    
+    bg(players)
+    display(players, 0)
+    pygame.draw.circle(SCREEN, Color.BLACK, pos, int(rad))
+    pygame.display.flip()
+    CLOCK.tick(fps)
+ 
+  #refresh the view now we are done   
+  bg(players)
+  display(players, fps)
+
 def swap_animation(players, fps):
+  for event in pygame.event.get():
+      if event.type == QUIT:
+        running = False
+    CLOCK.tick(15)
   #our beautiful animation
   for x in range(fps):
     bg(players)
