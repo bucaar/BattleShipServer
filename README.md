@@ -1,4 +1,12 @@
-# BATTLESHIP PROTOCOL
+# BattleShip
+
+### To run the server
+ * `git clone "https://github.com/bucaar/BattleShipServer.git"`
+ * `cd BattleShipServer`
+ * `chmod u+x ./game.py`
+ * `./game.py`
+
+### BATTLESHIP PROTOCOL
 
 | Variable | Datatype | Valid values |
 | --- | --- | --- |
