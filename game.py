@@ -77,7 +77,6 @@ def main():
   input()
   
   pygame.quit()
-  sock.shutdown()
   sock.close()
   
 def do_turn(players):
