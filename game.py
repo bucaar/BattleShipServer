@@ -74,10 +74,11 @@ def main():
 
   log("{} is the winner".format(players[winner].name))
   
-  while True:
+  waiting = True
+  while waiting:
     for event in pygame.event.get():
       if event.type == QUIT:
-        running = False
+        waiting = False
     CLOCK.tick(15)
   
   pygame.quit()
@@ -144,8 +145,8 @@ def bg(players):
 
 def shoot_animation(players, i, shot, fps):
   for event in pygame.event.get():
-      if event.type == QUIT:
-        running = False
+    if event.type == QUIT:
+      running = False
     CLOCK.tick(15)
 
   #get the boards x, y position
@@ -179,8 +180,8 @@ def shoot_animation(players, i, shot, fps):
 
 def swap_animation(players, fps):
   for event in pygame.event.get():
-      if event.type == QUIT:
-        running = False
+    if event.type == QUIT:
+      running = False
     CLOCK.tick(15)
   #our beautiful animation
   for x in range(fps):
