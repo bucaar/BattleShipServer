@@ -1,10 +1,5 @@
 #!/usr/bin/python3
 
-"""
-{"B":[0,0,"h"],"S":[0,1,"h"],"D":[0,2,"h"],"P":[0,3,"h"],"C":[0,4,"h"]}
-
-"""
-
 import pygame
 from pygame.locals import *
 from constants import *
@@ -28,15 +23,18 @@ def main():
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   server_address = ("localhost", 4949 )
-  log("START SERVER {}:{}".format(*server_address))
+  log("START {}:{}".format(*server_address))
   sock.bind(server_address)
   
   sock.listen()
   
-  players = [Player(sock.accept()) for _ in range(2)]
+  players = [Player(sock.accept(), i) for i in range(2)]
   
   players[0].opponent = players[1]
   players[1].opponent = players[0]
+  
+  for i in range(2):
+    log("NAME {}: {}".format(i, players[i].name))
   
   if VISUALIZE:
     #draw the bg
@@ -54,7 +52,7 @@ def main():
         if VISUALIZE:
           display(players, PLACE_FPS)
     except Exception as e:
-      log("ERROR {}: {}".format(p.name, e.args[0]))
+      log("ERROR {}: {}".format(i, e.args[0]))
       p.notify("ERROR {}".format(e.args[0]))
       winner = (i+1)%2
       running = False
@@ -81,7 +79,7 @@ def main():
       players[winner].opponent.notify("LOSE")
       running = False
 
-  log("{} is the winner".format(players[winner].name))
+  log("WIN {}".format(winner))
   
   if VISUALIZE:
     waiting = True
@@ -121,7 +119,7 @@ def do_turn(players):
           break
       
   except Exception as e:
-    log("ERROR: {}".format(e.args[0]))
+    log("ERROR {}: {}".format(i, e.args[0]))
     p.notify("ERROR {}".format(e.args[0]))
     return (i+1)%2
     
@@ -219,14 +217,13 @@ def swap_animation(players, fps):
 # --------------------------------------------------
 
 class Player:
-  def __init__(self, sock_info):
+  def __init__(self, sock_info, identity):
     self.board = Board()
+    self.identity = identity
     self.opponent = None
     self.connection, self.client_address = sock_info
     self.name = self.client_address
     self.name = self.listen("NAME")
-    
-    log("Connection from {}".format(self.client_address))
   
   def get_ship_placements(self):
     data = self.listen("SHIP PLACEMENT")
@@ -237,14 +234,14 @@ class Player:
     return json.loads(data)
       
   def notify(self, msg):
-    log("Server to {}: {}".format(self.name, msg))
+    log("SERVER {}: {}".format(self.identity, msg))
     self.connection.sendall((msg+"\r\n").encode("utf-8"))
     time.sleep(.02)
       
   def listen(self, msg):
     self.notify(msg)
     data = self.connection.recv(4096).decode("utf-8").strip()
-    log("{}: {}".format(self.name, data))
+    log("PLAYER {}: {}".format(self.identity, data))
     
     return data
     
