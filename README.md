@@ -14,7 +14,7 @@
 | **x** | int | [ 0 - 9 ] |
 | **y** | int | [ 0 - 9 ] |
 | **orient** | string | "h", "v" |
-| **result** | string | "HIT", "MISS", "SUNK" |
+| **result** | string | "HIT", "MISS", "SUNK **ship_id**" |
 | **message** | string | |
 
 | From Server | Reply type | Description |

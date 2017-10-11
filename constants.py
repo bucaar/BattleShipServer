@@ -5,7 +5,7 @@ NUM_ROWS = 10
 NUM_COLS = 10
 
 HIT  = "HIT"
-SUNK = "SUNK"
+SUNK = "SUNK {}"
 MISS = "MISS"
 
 VERTICAL   = "v"

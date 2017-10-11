@@ -85,7 +85,7 @@ def do_turn(players):
         log("SHOOT {}: {}".format(i, json.dumps(shot)))
         
         #see if we have a winner from this turn
-        if p.opponent.board.ships_remaining() == 0:
+        if len(p.opponent.board.ships_remaining()) == 0:
           return i
         
         if result == MISS:

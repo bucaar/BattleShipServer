@@ -72,7 +72,7 @@ class Board:
     remain_after = self.ships_remaining()
     
     if remain_after != remain_before:
-      return SUNK
+      return SUNK.format(" ".join(s for s in (remain_before - remain_after)))
     if self.tiles[x][y] != Tile.OCEAN:
       return HIT 
     else:
@@ -89,4 +89,4 @@ class Board:
             and not self.shots[x][y]:
           left.add(tile_value)
           
-    return len(left)
+    return left
