@@ -55,8 +55,8 @@ PLACE_FPS     = 2
 
 # --------------------------------------------------
 
-def visualize_file():
-  with open("output.log") as f:
+def visualize_file(args):
+  with open(args["f"]) as f:
     lines = f.readlines()
     lines = [l.strip() for l in lines]
     
@@ -209,5 +209,18 @@ def shoot_animation(players, boards, i, shot):
 
 # --------------------------------------------------
 
+def get_args():
+  args = {"f": "output.log"}
+  for i in range(len(sys.argv)):
+    if sys.argv[i][0] == "-":
+      arg = sys.argv[i+1] if i+1 < len(sys.argv) else ""
+      try:
+        arg = int(arg)
+      except:
+        pass
+      args[sys.argv[i][1]] = arg
+  return args
+
 if __name__ == "__main__":
-  visualize_file()
+  args = get_args()
+  visualize_file(args)

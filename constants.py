@@ -36,7 +36,6 @@ class Protocol:
   NAME = "NAME"
   PLACE = "SHIP PLACEMENT"
   SHOOT = "SHOT LOCATION"
-  RESULT = "{}"
   SHOT = "OPPONENT SHOT {},{},{}"
   WIN = "WIN"
   LOSE = "LOSE"

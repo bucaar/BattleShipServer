@@ -8,19 +8,20 @@ import socket
 import sys
 import json
 
+LOG_FILE = "output.log"
+
 # --------------------------------------------------
 
-def main():
+def main(args):
+  global LOG_FILE
+  
   running = True
   winner = None
-  
-  #set up the logging file
-  open("output.log", "w").close()
   
   #setup the server
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  server_address = ("localhost", 4948 )
+  server_address = ("0.0.0.0", args["p"] )
   log("START {}:{}".format(*server_address))
   sock.bind(server_address)
   
@@ -33,6 +34,10 @@ def main():
   
   #get the ship placements
   ship_placements = [p.get_ship_placements() for p in players]
+  
+  #set up the logging file
+  LOG_FILE = "{}VS{}.log".format(players[0].name, players[1].name)
+  open(LOG_FILE, "w").close()
   
   for i in range(2):
     log("NAME {}: {}".format(i, players[i].name))
@@ -52,8 +57,6 @@ def main():
       winner = (i+1)%2
       running = False
       break
-      
-  #TODO: swap boards
   
   while running:
     winner = do_turn(players)
@@ -65,7 +68,7 @@ def main():
   log("WIN {}".format(winner))
   
   #finally close the server
-  sock.close()  
+  sock.close()
   
 # --------------------------------------------------
   
@@ -99,7 +102,20 @@ def do_turn(players):
 
 def log(msg):
   print(msg)
-  print(msg, file=open("output.log", "a"))
+  print(msg, file=open(LOG_FILE, "a"))
+  
+def get_args():
+  args = {"p": 4949}
+  for i in range(len(sys.argv)):
+    if sys.argv[i][0] == "-":
+      arg = sys.argv[i+1] if i+1 < len(sys.argv) else ""
+      try:
+        arg = int(arg)
+      except:
+        pass
+      args[sys.argv[i][1]] = arg
+  return args
 
 if __name__ == "__main__":
-  main()
+  args = get_args()
+  main(args)
