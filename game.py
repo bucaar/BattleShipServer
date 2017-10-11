@@ -22,7 +22,6 @@ def main(args):
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   server_address = ("0.0.0.0", args["p"] )
-  log("START {}:{}".format(*server_address))
   sock.bind(server_address)
   
   sock.listen()
@@ -38,6 +37,8 @@ def main(args):
   #set up the logging file
   LOG_FILE = "{}VS{}.log".format(players[0].name, players[1].name)
   open(LOG_FILE, "w").close()
+  
+  log("START {}:{}".format(*server_address))
   
   for i in range(2):
     log("NAME {}: {}".format(i, players[i].name))

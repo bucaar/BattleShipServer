@@ -65,10 +65,7 @@ def visualize_file(args):
   pygame.display.flip()
   
   for line in lines:
-    #make sure we can quit whenever
-    for event in pygame.event.get():
-      if event.type == QUIT:
-        pass
+    check_quit()
     
     print(line)
     if line[:4] == "NAME":
@@ -82,6 +79,7 @@ def visualize_file(args):
       data = line[9:]
       ships = json.loads(data)
       for s, a in ships.items():
+        check_quit()
         boards[i].place_ship(a[0], a[1], s, a[2])
         draw_boards(boards)
         pygame.display.flip()
@@ -103,7 +101,14 @@ def visualize_file(args):
   pygame.quit()
   
 # --------------------------------------------------
-  
+
+def check_quit():
+  for event in pygame.event.get():
+    if event.type == QUIT:
+      sys.exit(0)
+      
+# --------------------------------------------------
+      
 def draw_boards(boards):
   #draw the newly placed ships
   for i, b in enumerate(boards):
@@ -194,6 +199,7 @@ def shoot_animation(players, boards, i, shot):
   
   #our lovely animation
   for x in range(ANIMATION_FPS+1):
+    check_quit()
     percent = x/ANIMATION_FPS
     rad = (-16*percent**2+16*percent+1) * HIT_MARK_RADIUS
     pos = (int((end[0]-start[0])*percent+start[0]), int((end[1]-start[1])*percent+start[1]))
