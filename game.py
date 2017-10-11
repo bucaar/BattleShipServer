@@ -4,11 +4,11 @@ import pygame
 from pygame.locals import *
 from constants import *
 from board import Board
+from player import Player
 import random
 import socket
 import sys
 import json
-import time
 
 # --------------------------------------------------
 
@@ -33,24 +33,18 @@ def main():
   players[0].opponent = players[1]
   players[1].opponent = players[0]
   
-  for i in range(2):
-    log("NAME {}: {}".format(i, players[i].name))
-  
-  if VISUALIZE:
-    #draw the bg
-    bg(players)
-  
   #get the ship placements
   ship_placements = [p.get_ship_placements() for p in players]
-  
+  for i in range(2):
+    log("NAME {}: {}".format(i, players[i].name))
+    log("PLACE {}: {}".format(i, json.dumps(ship_placements[i])))
+    
   #place the ships
   for i, p in enumerate(players):
     try:
       placements = ship_placements[i]
       for ship, placement in placements.items():
         p.board.place_ship(placement[0], placement[1], ship, placement[2])
-        if VISUALIZE:
-          display(players, PLACE_FPS)
     except Exception as e:
       log("ERROR {}: {}".format(i, e.args[0]))
       p.notify("ERROR {}".format(e.args[0]))
@@ -58,21 +52,7 @@ def main():
       running = False
       break
   
-  #if someone hasn't lost yet
-  if running:
-    if VISUALIZE:
-      #draw the newly placed ships
-      display(players, PLACE_FPS)
-    
-      #swap the boards
-      swap_animation(players, ANIMATION_FPS)
-  
   while running:
-    if VISUALIZE:
-      for event in pygame.event.get():
-        if event.type == QUIT:
-          running = False
-
     winner = do_turn(players)
     if winner is not None:
       players[winner].notify("WIN")
@@ -81,17 +61,8 @@ def main():
 
   log("WIN {}".format(winner))
   
-  if VISUALIZE:
-    waiting = True
-    while waiting:
-      for event in pygame.event.get():
-        if event.type == QUIT:
-          waiting = False
-      CLOCK.tick(15)
-  
-  if VISUALIZE:
-    pygame.quit()
-    sock.close()
+  #finally close the server
+  sock.close()  
   
 def do_turn(players):
   try:
@@ -100,17 +71,11 @@ def do_turn(players):
       while True:
         shot = p.get_shot()
         
-        if VISUALIZE:
-          shoot_animation(players, i, shot, ANIMATION_FPS)
-        
         result = p.board.shoot(shot[0], shot[1])
         p.notify(result)
         p.opponent.notify("OPPONENT SHOT {},{},{}".format(shot[0], shot[1], result))
+        log("SHOOT {}: {}".format(i, json.dumps(shot)))
         
-        if VISUALIZE:
-          #draw the board
-          display(players, SHOOT_FPS)
-      
         #see if we have a winner from this turn
         if p.board.ships_remaining() == 0:
           return i
@@ -126,8 +91,6 @@ def do_turn(players):
   return None
   
 def display(players, fps, offset=0):
-  if not VISUALIZE:
-    return
   #draw the newly placed ships
   for i, p in enumerate(players):
     direction = 1 if i == 0 else -1
@@ -137,8 +100,6 @@ def display(players, fps, offset=0):
     CLOCK.tick(fps)
   
 def bg(players):
-  if not VISUALIZE:
-    return
   global PLAYER_1, PLAYER_1_RECT, PLAYER_2, PLAYER_2_RECT
   
   #draw the background and ids
@@ -159,8 +120,6 @@ def bg(players):
   SCREEN.blit(PLAYER_2, PLAYER_2_RECT)
 
 def shoot_animation(players, i, shot, fps):
-  if not VISUALIZE:
-    return
   for event in pygame.event.get():
     if event.type == QUIT:
       running = False
@@ -196,8 +155,6 @@ def shoot_animation(players, i, shot, fps):
   display(players, fps)
 
 def swap_animation(players, fps):
-  if not VISUALIZE:
-    return
   for event in pygame.event.get():
     if event.type == QUIT:
       running = False
@@ -213,40 +170,6 @@ def swap_animation(players, fps):
   #refresh the view now we are done
   bg(players)
   display(players, fps)
-      
-# --------------------------------------------------
-
-class Player:
-  def __init__(self, sock_info, identity):
-    self.board = Board()
-    self.identity = identity
-    self.opponent = None
-    self.connection, self.client_address = sock_info
-    self.name = self.client_address
-    self.name = self.listen("NAME")
-  
-  def get_ship_placements(self):
-    data = self.listen("SHIP PLACEMENT")
-    return json.loads(data)
-  
-  def get_shot(self):
-    data = self.listen("SHOT LOCATION")
-    return json.loads(data)
-      
-  def notify(self, msg):
-    log("SERVER {}: {}".format(self.identity, msg))
-    self.connection.sendall((msg+"\r\n").encode("utf-8"))
-    time.sleep(.02)
-      
-  def listen(self, msg):
-    self.notify(msg)
-    data = self.connection.recv(4096).decode("utf-8").strip()
-    log("PLAYER {}: {}".format(self.identity, data))
-    
-    return data
-    
-  def close(self):
-    self.connection.close()
   
 # --------------------------------------------------
 
