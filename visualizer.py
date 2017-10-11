@@ -23,9 +23,6 @@ CLOCK  = pygame.time.Clock()
 
 FONT = pygame.font.SysFont(None, TILE_SIZE)
 
-
-# --------------------------------------------------
-
 class Color:
   WHITE      = (255, 255, 255)
   BLACK      = (  0,   0,   0)
@@ -220,6 +217,8 @@ def get_args():
         pass
       args[sys.argv[i][1]] = arg
   return args
+
+# --------------------------------------------------
 
 if __name__ == "__main__":
   args = get_args()

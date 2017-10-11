@@ -10,6 +10,8 @@ class Board:
                   Tile.DESTORYER  : ShipState.UNPLACED,
                   Tile.PATROL     : ShipState.UNPLACED}
   
+  # --------------------------------------------------
+  
   def place_ship(self, x, y, s, o):
     #validate params
     s = s.upper()
@@ -53,6 +55,8 @@ class Board:
     #note that we placed this ship
     self.ships[s] = ShipState.PLACED
   
+  # --------------------------------------------------
+  
   def shoot(self, x, y):
     #validate params
     if x < 0 or x > NUM_COLS or y < 0 or y > NUM_ROWS:
@@ -77,7 +81,9 @@ class Board:
       return HIT 
     else:
       return MISS
-    
+  
+  # --------------------------------------------------
+  
   def ships_remaining(self):
     #keep track of the unshot ships that we see
     left = set()

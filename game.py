@@ -104,6 +104,8 @@ def log(msg):
   print(msg)
   print(msg, file=open(LOG_FILE, "a"))
   
+# --------------------------------------------------
+
 def get_args():
   args = {"p": 4949}
   for i in range(len(sys.argv)):
@@ -115,6 +117,8 @@ def get_args():
         pass
       args[sys.argv[i][1]] = arg
   return args
+
+# --------------------------------------------------
 
 if __name__ == "__main__":
   args = get_args()
