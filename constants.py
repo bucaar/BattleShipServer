@@ -1,6 +1,8 @@
 import pygame, sys
 from pygame.locals import *
 
+VISUALIZE = False
+
 NUM_ROWS = 10
 NUM_COLS = 10
 
@@ -60,13 +62,15 @@ class Tile:
           "D": {"length": 3, "name": "Destroyer",        "color": Color.DESTORYER},
           "P": {"length": 2, "name": "Patrol Boat",      "color": Color.PATROL}}
 
-pygame.init()
-pygame.display.set_caption(SCREEN_CAPTION)
+if VISUALIZE:
+  pygame.init()
+  pygame.display.set_caption(SCREEN_CAPTION)
 
-SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-CLOCK  = pygame.time.Clock()
+  SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+  CLOCK  = pygame.time.Clock()
 
-FONT = pygame.font.SysFont(None, TILE_SIZE)
+  FONT = pygame.font.SysFont(None, TILE_SIZE)
+  
 PLAYER_1 = None
 PLAYER_2 = None
 PLAYER_1_RECT = None

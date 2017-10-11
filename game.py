@@ -13,6 +13,7 @@ import random
 import socket
 import sys
 import json
+import time
 
 # --------------------------------------------------
 
@@ -20,10 +21,14 @@ def main():
   running = True
   winner = None
   
+  #set up the logging file
+  open("output.log", "w").close()
+  
+  #setup the server
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-  server_address = ('localhost', 4948)
-  log('\n---------------------------------\n\nStarting up on {}:{}'.format(*server_address))
+  server_address = ("localhost", 4949 )
+  log("START SERVER {}:{}".format(*server_address))
   sock.bind(server_address)
   
   sock.listen()
@@ -33,8 +38,9 @@ def main():
   players[0].opponent = players[1]
   players[1].opponent = players[0]
   
-  #draw the bg
-  bg(players)
+  if VISUALIZE:
+    #draw the bg
+    bg(players)
   
   #get the ship placements
   ship_placements = [p.get_ship_placements() for p in players]
@@ -45,9 +51,10 @@ def main():
       placements = ship_placements[i]
       for ship, placement in placements.items():
         p.board.place_ship(placement[0], placement[1], ship, placement[2])
-        display(players, PLACE_FPS)
+        if VISUALIZE:
+          display(players, PLACE_FPS)
     except Exception as e:
-      log("[ERROR] {}: {}".format(p.name, e.args[0]))
+      log("ERROR {}: {}".format(p.name, e.args[0]))
       p.notify("ERROR {}".format(e.args[0]))
       winner = (i+1)%2
       running = False
@@ -55,16 +62,18 @@ def main():
   
   #if someone hasn't lost yet
   if running:
-    #draw the newly placed ships
-    display(players, PLACE_FPS)
+    if VISUALIZE:
+      #draw the newly placed ships
+      display(players, PLACE_FPS)
     
-    #swap the boards
-    swap_animation(players, ANIMATION_FPS)
+      #swap the boards
+      swap_animation(players, ANIMATION_FPS)
   
   while running:
-    for event in pygame.event.get():
-      if event.type == QUIT:
-        running = False
+    if VISUALIZE:
+      for event in pygame.event.get():
+        if event.type == QUIT:
+          running = False
 
     winner = do_turn(players)
     if winner is not None:
@@ -74,15 +83,17 @@ def main():
 
   log("{} is the winner".format(players[winner].name))
   
-  waiting = True
-  while waiting:
-    for event in pygame.event.get():
-      if event.type == QUIT:
-        waiting = False
-    CLOCK.tick(15)
+  if VISUALIZE:
+    waiting = True
+    while waiting:
+      for event in pygame.event.get():
+        if event.type == QUIT:
+          waiting = False
+      CLOCK.tick(15)
   
-  pygame.quit()
-  sock.close()
+  if VISUALIZE:
+    pygame.quit()
+    sock.close()
   
 def do_turn(players):
   try:
@@ -91,14 +102,16 @@ def do_turn(players):
       while True:
         shot = p.get_shot()
         
-        shoot_animation(players, i, shot, ANIMATION_FPS)
+        if VISUALIZE:
+          shoot_animation(players, i, shot, ANIMATION_FPS)
         
         result = p.board.shoot(shot[0], shot[1])
         p.notify(result)
         p.opponent.notify("OPPONENT SHOT {},{},{}".format(shot[0], shot[1], result))
         
-        #draw the board
-        display(players, SHOOT_FPS)
+        if VISUALIZE:
+          #draw the board
+          display(players, SHOOT_FPS)
       
         #see if we have a winner from this turn
         if p.board.ships_remaining() == 0:
@@ -115,6 +128,8 @@ def do_turn(players):
   return None
   
 def display(players, fps, offset=0):
+  if not VISUALIZE:
+    return
   #draw the newly placed ships
   for i, p in enumerate(players):
     direction = 1 if i == 0 else -1
@@ -124,6 +139,8 @@ def display(players, fps, offset=0):
     CLOCK.tick(fps)
   
 def bg(players):
+  if not VISUALIZE:
+    return
   global PLAYER_1, PLAYER_1_RECT, PLAYER_2, PLAYER_2_RECT
   
   #draw the background and ids
@@ -144,6 +161,8 @@ def bg(players):
   SCREEN.blit(PLAYER_2, PLAYER_2_RECT)
 
 def shoot_animation(players, i, shot, fps):
+  if not VISUALIZE:
+    return
   for event in pygame.event.get():
     if event.type == QUIT:
       running = False
@@ -179,6 +198,8 @@ def shoot_animation(players, i, shot, fps):
   display(players, fps)
 
 def swap_animation(players, fps):
+  if not VISUALIZE:
+    return
   for event in pygame.event.get():
     if event.type == QUIT:
       running = False
@@ -218,11 +239,12 @@ class Player:
   def notify(self, msg):
     log("Server to {}: {}".format(self.name, msg))
     self.connection.sendall((msg+"\r\n").encode("utf-8"))
+    time.sleep(.02)
       
   def listen(self, msg):
     self.notify(msg)
     data = self.connection.recv(4096).decode("utf-8").strip()
-    log('{}: {}'.format(self.name, data))
+    log("{}: {}".format(self.name, data))
     
     return data
     
