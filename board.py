@@ -10,50 +10,6 @@ class Board:
                   Tile.DESTORYER  : ShipState.UNPLACED,
                   Tile.PATROL     : ShipState.UNPLACED}
   
-  def draw(self, xpos, ypos):
-    for x, col in enumerate(self.tiles):
-      for y, tile_value in enumerate(col):
-        tile_data = Tile.DATA[tile_value]
-        
-        #draw the empty ocean tile
-        rect = (xpos+x*TILE_SIZE, ypos+y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-        pygame.draw.rect(SCREEN, Color.OCEAN, rect, 0)
-        pygame.draw.rect(SCREEN, Color.BLACK, rect, 1)
-        
-        #we need to draw a ship tile here
-        if tile_value != Tile.OCEAN:
-          rect = [xpos+x*TILE_SIZE+(TILE_SIZE-SHIP_WIDTH)//2, 
-                  ypos+y*TILE_SIZE+(TILE_SIZE-SHIP_WIDTH)//2, 
-                  SHIP_WIDTH, 
-                  SHIP_WIDTH]
-          
-          #same ship tile to the west, reduce pos increase width
-          if x-1 >= 0 and self.tiles[x-1][y] == tile_value:
-            rect[0] -= SHIP_PADDING
-            rect[2] += SHIP_PADDING
-          #same ship tile to the north, reduce pos increase width
-          if y-1 >= 0 and self.tiles[x][y-1] == tile_value:
-            rect[1] -= SHIP_PADDING
-            rect[3] += SHIP_PADDING
-          #same ship tile to the east, increase width
-          if x+1 < NUM_COLS and self.tiles[x+1][y] == tile_value:
-            rect[2] += SHIP_PADDING
-          #same ship tile to the south, increase width
-          if y+1 < NUM_ROWS and self.tiles[x][y+1] == tile_value:
-            rect[3] += SHIP_PADDING
-            
-          pygame.draw.rect(SCREEN, tile_data["color"], rect, 0)
-          
-        #has this tile been shot?
-        if self.shots[x][y]:
-          pos = (xpos+x*TILE_SIZE+TILE_SIZE//2, 
-                 ypos+y*TILE_SIZE+TILE_SIZE//2)
-          #is it water?
-          if tile_value == Tile.OCEAN:
-            pygame.draw.circle(SCREEN, Color.MISS, pos, HIT_MARK_RADIUS)
-          else:
-            pygame.draw.circle(SCREEN, Color.HIT,  pos, HIT_MARK_RADIUS)
-  
   def place_ship(self, x, y, s, o):
     #validate params
     s = s.upper()
