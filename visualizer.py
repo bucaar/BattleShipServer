@@ -5,11 +5,13 @@ from pygame.locals import *
 from constants import *
 from board import Board
 import json
+import os
 
-TILE_SIZE = 32
+TILE_SIZE = 48
 SHIP_WIDTH = TILE_SIZE//2
 SHIP_PADDING = (TILE_SIZE-SHIP_WIDTH)//2
-HIT_MARK_RADIUS = 6
+HIT_MARK_RADIUS = TILE_SIZE//8
+CANNON_BALL_SCALE = 3
 
 SCREEN_WIDTH   = TILE_SIZE*3+TILE_SIZE*NUM_ROWS*2
 SCREEN_HEIGHT  = TILE_SIZE*2+TILE_SIZE*NUM_COLS
@@ -21,31 +23,25 @@ pygame.display.set_caption(SCREEN_CAPTION)
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 CLOCK  = pygame.time.Clock()
 
-FONT = pygame.font.SysFont(None, TILE_SIZE)
+FONT_SIZE = int(TILE_SIZE*1.5)
+FONT = pygame.font.SysFont(None, FONT_SIZE)
 
 class Color:
   WHITE      = (255, 255, 255)
   BLACK      = (  0,   0,   0)
-  GRAY       = (160, 160, 160)
-  RED        = (255,   0,   0)
-  BLUE       = (  0,   0, 255)
+  GRAY       = (200, 200, 200)
+  RED        = (255,  51,  51)
+  BLUE       = ( 51,  51, 255)
+  ORANGE     = (255, 153,  51)
   
-  HIT        = RED
-  MISS       = WHITE
+  HIT        = (255,   0,   0)
+  MISS       = (255, 255, 255)
   
-  OCEAN      = ( 51,  51, 255)
-  CARRIER    = (100, 100, 100)
-  BATTLESHIP = (125, 125, 125)
-  SUBMARINE  = (150, 150, 150)
-  DESTORYER  = (175, 175, 175)
-  PATROL     = (200, 200, 200)
+  OCEAN      = ( 64, 164, 223)
+  SHIP       = (100, 100, 100)
   
-Tile.DATA[" "]["color"] = Color.OCEAN
-Tile.DATA["C"]["color"] = Color.CARRIER
-Tile.DATA["B"]["color"] = Color.BATTLESHIP
-Tile.DATA["S"]["color"] = Color.SUBMARINE
-Tile.DATA["D"]["color"] = Color.DESTORYER
-Tile.DATA["P"]["color"] = Color.PATROL
+class Image:
+  WATER = pygame.transform.scale(pygame.image.load(os.path.join("res", "water.jpg")), (TILE_SIZE*NUM_COLS, TILE_SIZE*NUM_COLS))
   
 ANIMATION_FPS = 30
 PLACE_FPS     = 2
@@ -96,6 +92,10 @@ def visualize_file(args):
       pygame.display.flip()
     elif line[:3] == "WIN":
       pass
+      
+  while True:
+    check_quit()
+    CLOCK.tick(PLACE_FPS)
   
   #end the pygame screens
   pygame.quit()
@@ -120,15 +120,40 @@ def draw_boards(boards):
 # --------------------------------------------------
 
 def draw_board(board, xpos, ypos):
+  #draw the water
+  SCREEN.blit(Image.WATER, (xpos, ypos))
+  
+  #keep track of ships we've already drawn
+  drawn = set()
+  
   for x, col in enumerate(board.tiles):
     for y, tile_value in enumerate(col):
       tile_data = Tile.DATA[tile_value]
       
-      #draw the empty ocean tile
-      rect = (xpos+x*TILE_SIZE, ypos+y*TILE_SIZE, TILE_SIZE, TILE_SIZE)
-      pygame.draw.rect(SCREEN, Color.OCEAN, rect, 0)
-      pygame.draw.rect(SCREEN, Color.BLACK, rect, 1)
+      rect = [xpos+x*TILE_SIZE, ypos+y*TILE_SIZE, TILE_SIZE, TILE_SIZE]
       
+      #we need to draw a ship tile here
+      if tile_value != Tile.OCEAN and tile_value not in drawn:
+        if x<NUM_COLS-1 and board.tiles[x+1][y] == tile_value:
+          direction = HORIZONTAL
+        elif y<NUM_ROWS-1 and board.tiles[x][y+1] == tile_value:
+          direction = VERTICAL
+        
+        if direction == HORIZONTAL:
+          rect[2] *= tile_data["length"]
+        elif direction == VERTICAL:
+          rect[3] *= tile_data["length"]
+          
+        rect[0] += SHIP_PADDING//2
+        rect[1] += SHIP_PADDING//2
+        rect[2] -= SHIP_PADDING
+        rect[3] -= SHIP_PADDING
+        
+        pygame.draw.ellipse(SCREEN, Color.SHIP, rect)
+        
+        drawn.add(tile_value)
+      
+      """
       #we need to draw a ship tile here
       if tile_value != Tile.OCEAN:
         rect = [xpos+x*TILE_SIZE+(TILE_SIZE-SHIP_WIDTH)//2, 
@@ -151,8 +176,9 @@ def draw_board(board, xpos, ypos):
         if y+1 < NUM_ROWS and board.tiles[x][y+1] == tile_value:
           rect[3] += SHIP_PADDING
           
-        pygame.draw.rect(SCREEN, tile_data["color"], rect, 0)
-        
+        pygame.draw.rect(SCREEN, Color.SHIP, rect, 0)
+      """
+       
       #has this tile been shot?
       if board.shots[x][y]:
         pos = (xpos+x*TILE_SIZE+TILE_SIZE//2, 
@@ -201,7 +227,7 @@ def shoot_animation(players, boards, i, shot):
   for x in range(ANIMATION_FPS+1):
     check_quit()
     percent = x/ANIMATION_FPS
-    rad = (-16*percent**2+16*percent+1) * HIT_MARK_RADIUS
+    rad = (-(4*CANNON_BALL_SCALE)*percent**2+(4*CANNON_BALL_SCALE)*percent+1) * HIT_MARK_RADIUS
     pos = (int((end[0]-start[0])*percent+start[0]), int((end[1]-start[1])*percent+start[1]))
     
     bg(players)
