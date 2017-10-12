@@ -7,11 +7,14 @@ from board import Board
 import json
 import os
 
-TILE_SIZE = 48
+TILE_SIZE = 64
 SHIP_WIDTH = TILE_SIZE//2
 SHIP_PADDING = (TILE_SIZE-SHIP_WIDTH)//2
+
 HIT_MARK_RADIUS = TILE_SIZE//8
 CANNON_BALL_SCALE = 3
+
+BOARD_BORDER = 5
 
 SCREEN_WIDTH   = TILE_SIZE*3+TILE_SIZE*NUM_ROWS*2
 SCREEN_HEIGHT  = TILE_SIZE*2+TILE_SIZE*NUM_COLS
@@ -26,6 +29,9 @@ CLOCK  = pygame.time.Clock()
 FONT_SIZE = int(TILE_SIZE*1.5)
 FONT = pygame.font.SysFont(None, FONT_SIZE)
 
+EXPLOSION_W = 5
+EXPLOSION_H = 5
+
 class Color:
   WHITE      = (255, 255, 255)
   BLACK      = (  0,   0,   0)
@@ -34,14 +40,16 @@ class Color:
   BLUE       = ( 51,  51, 255)
   ORANGE     = (255, 153,  51)
   
-  HIT        = (255,   0,   0)
-  MISS       = (255, 255, 255)
+  HIT        = (255,  51,  51)
+  MISS       = (  0,   0,   0)
   
   OCEAN      = ( 64, 164, 223)
   SHIP       = (100, 100, 100)
   
 class Image:
-  WATER = pygame.transform.scale(pygame.image.load(os.path.join("res", "water.jpg")), (TILE_SIZE*NUM_COLS, TILE_SIZE*NUM_COLS))
+  BACKGROUND = pygame.transform.scale(pygame.image.load(os.path.join("res", "background.jpg")).convert(), (SCREEN_WIDTH, SCREEN_HEIGHT))
+  WATER = pygame.transform.scale(pygame.image.load(os.path.join("res", "water.jpg")).convert(), (TILE_SIZE*NUM_COLS, TILE_SIZE*NUM_COLS))
+  EXPLOSION = pygame.transform.scale(pygame.image.load(os.path.join("res", "explosion.png")).convert_alpha(), (TILE_SIZE*EXPLOSION_W, TILE_SIZE*EXPLOSION_H))
   
 ANIMATION_FPS = 30
 PLACE_FPS     = 2
@@ -92,7 +100,8 @@ def visualize_file(args):
       pygame.display.flip()
     elif line[:3] == "WIN":
       pass
-      
+ 
+  #game is over, just wait until they exit
   while True:
     check_quit()
     CLOCK.tick(PLACE_FPS)
@@ -113,18 +122,20 @@ def draw_boards(boards):
   #draw the newly placed ships
   for i, b in enumerate(boards):
     direction = 1 if i == 0 else -1
-    draw_board(b,
+    draw_board(b, i, 
            TILE_SIZE+(TILE_SIZE+TILE_SIZE*NUM_ROWS)*i, 
            TILE_SIZE)
     
 # --------------------------------------------------
 
-def draw_board(board, xpos, ypos):
+def draw_board(board, i, xpos, ypos):
   #draw the water
   SCREEN.blit(Image.WATER, (xpos, ypos))
   
   #keep track of ships we've already drawn
   drawn = set()
+  
+  pygame.draw.rect(SCREEN, Color.RED if i==0 else Color.BLUE, (xpos, ypos, NUM_ROWS*TILE_SIZE, NUM_COLS*TILE_SIZE), BOARD_BORDER)
   
   for x, col in enumerate(board.tiles):
     for y, tile_value in enumerate(col):
@@ -152,32 +163,6 @@ def draw_board(board, xpos, ypos):
         pygame.draw.ellipse(SCREEN, Color.SHIP, rect)
         
         drawn.add(tile_value)
-      
-      """
-      #we need to draw a ship tile here
-      if tile_value != Tile.OCEAN:
-        rect = [xpos+x*TILE_SIZE+(TILE_SIZE-SHIP_WIDTH)//2, 
-                ypos+y*TILE_SIZE+(TILE_SIZE-SHIP_WIDTH)//2, 
-                SHIP_WIDTH, 
-                SHIP_WIDTH]
-        
-        #same ship tile to the west, reduce pos increase width
-        if x-1 >= 0 and board.tiles[x-1][y] == tile_value:
-          rect[0] -= SHIP_PADDING
-          rect[2] += SHIP_PADDING
-        #same ship tile to the north, reduce pos increase width
-        if y-1 >= 0 and board.tiles[x][y-1] == tile_value:
-          rect[1] -= SHIP_PADDING
-          rect[3] += SHIP_PADDING
-        #same ship tile to the east, increase width
-        if x+1 < NUM_COLS and board.tiles[x+1][y] == tile_value:
-          rect[2] += SHIP_PADDING
-        #same ship tile to the south, increase width
-        if y+1 < NUM_ROWS and board.tiles[x][y+1] == tile_value:
-          rect[3] += SHIP_PADDING
-          
-        pygame.draw.rect(SCREEN, Color.SHIP, rect, 0)
-      """
        
       #has this tile been shot?
       if board.shots[x][y]:
@@ -189,11 +174,13 @@ def draw_board(board, xpos, ypos):
         else:
           pygame.draw.circle(SCREEN, Color.HIT,  pos, HIT_MARK_RADIUS)
 
+
 # --------------------------------------------------
 
 def bg(players):
   #draw the background and ids
-  SCREEN.fill(Color.GRAY)
+  #SCREEN.fill(Color.GRAY)
+  SCREEN.blit(Image.BACKGROUND, (0, 0))
   
   player_1 = FONT.render(players[0], True, Color.RED)
   player_1_rect = player_1.get_rect()
@@ -224,9 +211,9 @@ def shoot_animation(players, boards, i, shot):
   start = (-HIT_MARK_RADIUS, SCREEN_HEIGHT//2) if i == 0 else (SCREEN_WIDTH+HIT_MARK_RADIUS, SCREEN_HEIGHT//2)
   
   #our lovely animation
-  for x in range(ANIMATION_FPS+1):
+  for p in range(ANIMATION_FPS+1):
     check_quit()
-    percent = x/ANIMATION_FPS
+    percent = p/ANIMATION_FPS
     rad = (-(4*CANNON_BALL_SCALE)*percent**2+(4*CANNON_BALL_SCALE)*percent+1) * HIT_MARK_RADIUS
     pos = (int((end[0]-start[0])*percent+start[0]), int((end[1]-start[1])*percent+start[1]))
     
@@ -235,6 +222,19 @@ def shoot_animation(players, boards, i, shot):
     pygame.draw.circle(SCREEN, Color.BLACK, pos, int(rad))
     pygame.display.flip()
     CLOCK.tick(ANIMATION_FPS)
+    
+  #if we hit a ship, we need the explosion
+  if boards[(i+1)%2].tiles[x][y] != Tile.OCEAN:
+    for p in range(EXPLOSION_W*EXPLOSION_H):
+      check_quit()
+      sx = p % EXPLOSION_W
+      sy = p // EXPLOSION_H
+      
+      bg(players)
+      draw_boards(boards)
+      SCREEN.blit(Image.EXPLOSION, (xpos+x*TILE_SIZE, ypos+y*TILE_SIZE), (sx*TILE_SIZE, sy*TILE_SIZE, TILE_SIZE, TILE_SIZE))
+      pygame.display.flip()
+      CLOCK.tick(ANIMATION_FPS)
 
 # --------------------------------------------------
 
