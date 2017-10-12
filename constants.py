@@ -11,6 +11,8 @@ MISS = "MISS"
 VERTICAL   = "v"
 HORIZONTAL = "h"
 
+SOCKET_TIMEOUT = 1.0
+
 class ShipState:
   UNPLACED  = 0
   PLACED    = 1

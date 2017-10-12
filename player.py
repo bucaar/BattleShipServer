@@ -12,8 +12,13 @@ class Player:
     self.connection, self.client_address = sock_info if sock_info else (None, None)
     
     self.name = self.client_address
-    self.name = self.listen(Protocol.NAME)
   
+  # --------------------------------------------------
+  
+  def get_name(self):
+    data = self.listen(Protocol.NAME)
+    return data
+    
   # --------------------------------------------------
   
   def get_ship_placements(self):
@@ -35,7 +40,9 @@ class Player:
       
   def listen(self, msg):
     self.notify(msg)
+    self.connection.settimeout(SOCKET_TIMEOUT)
     data = self.connection.recv(4096).decode("utf-8").strip()
+    self.connection.settimeout(None)
     return data
   
   # --------------------------------------------------

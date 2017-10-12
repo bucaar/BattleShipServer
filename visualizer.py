@@ -7,7 +7,7 @@ from board import Board
 import json
 import os
 
-TILE_SIZE = 64
+TILE_SIZE = 80
 SHIP_WIDTH = TILE_SIZE//2
 SHIP_PADDING = (TILE_SIZE-SHIP_WIDTH)//2
 
