@@ -33,17 +33,14 @@ EXPLOSION_W = 5
 EXPLOSION_H = 5
 
 class Color:
-  WHITE      = (255, 255, 255)
   BLACK      = (  0,   0,   0)
   GRAY       = (200, 200, 200)
   RED        = (255,  51,  51)
   BLUE       = ( 51,  51, 255)
-  ORANGE     = (255, 153,  51)
   
   HIT        = (255,  51,  51)
   MISS       = (  0,   0,   0)
   
-  OCEAN      = ( 64, 164, 223)
   SHIP       = (100, 100, 100)
   
 class Image:
@@ -154,7 +151,7 @@ def draw_board(board, i, xpos, ypos):
           rect[2] *= tile_data["length"]
         elif direction == VERTICAL:
           rect[3] *= tile_data["length"]
-          
+        
         rect[0] += SHIP_PADDING//2
         rect[1] += SHIP_PADDING//2
         rect[2] -= SHIP_PADDING
@@ -179,7 +176,6 @@ def draw_board(board, i, xpos, ypos):
 
 def bg(players):
   #draw the background and ids
-  #SCREEN.fill(Color.GRAY)
   SCREEN.blit(Image.BACKGROUND, (0, 0))
   
   player_1 = FONT.render(players[0], True, Color.RED)
