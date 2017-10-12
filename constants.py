@@ -11,8 +11,6 @@ MISS = "MISS"
 VERTICAL   = "v"
 HORIZONTAL = "h"
 
-NOTIFY_DELAY = .02
-
 class ShipState:
   UNPLACED  = 0
   PLACED    = 1

@@ -30,7 +30,6 @@ class Player:
       
   def notify(self, msg):
     self.connection.sendall((msg+"\r\n").encode("utf-8"))
-    time.sleep(NOTIFY_DELAY)
   
   # --------------------------------------------------
       
