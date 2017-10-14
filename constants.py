@@ -11,6 +11,8 @@ MISS = "MISS"
 VERTICAL   = "v"
 HORIZONTAL = "h"
 
+CONTINUE_AFTER_HIT = True
+
 SOCKET_TIMEOUT = 1.0
 
 class ShipState:

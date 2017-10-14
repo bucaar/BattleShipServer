@@ -4,9 +4,8 @@ import time
 import json
 
 class Player:
-  def __init__(self, sock_info, identity):
+  def __init__(self, sock_info):
     self.board = Board()
-    self.identity = identity
     self.opponent = None
     
     self.connection, self.client_address = sock_info
