@@ -9,7 +9,7 @@ class Player:
     self.identity = identity
     self.opponent = None
     
-    self.connection, self.client_address = sock_info if sock_info else (None, None)
+    self.connection, self.client_address = sock_info
     
     self.name = self.client_address
   
@@ -34,7 +34,7 @@ class Player:
   # --------------------------------------------------
       
   def notify(self, msg):
-    self.connection.sendall((msg+"\r\n").encode("utf-8"))
+    bytes = self.connection.sendall((msg+"\n").encode("utf-8"))
   
   # --------------------------------------------------
       

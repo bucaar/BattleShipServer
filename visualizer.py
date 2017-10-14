@@ -235,7 +235,7 @@ def shoot_animation(players, boards, i, shot):
 # --------------------------------------------------
 
 def get_args():
-  args = {"f": "output.log"}
+  args = {}
   for i in range(len(sys.argv)):
     if sys.argv[i][0] == "-":
       arg = sys.argv[i+1] if i+1 < len(sys.argv) else ""
@@ -244,6 +244,8 @@ def get_args():
       except:
         pass
       args[sys.argv[i][1]] = arg
+  if "f" not in args:
+    args["f"] = input("Enter path to log file: ")
   return args
 
 # --------------------------------------------------

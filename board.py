@@ -59,7 +59,7 @@ class Board:
   
   def shoot(self, x, y):
     #validate params
-    if x < 0 or x > NUM_COLS or y < 0 or y > NUM_ROWS:
+    if x < 0 or x >= NUM_COLS or y < 0 or y >= NUM_ROWS:
       raise Exception("({}, {}) is not a valid location to shoot".format(x, y))
     
     #already shot here
