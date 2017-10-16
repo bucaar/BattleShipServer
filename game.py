@@ -28,7 +28,7 @@ def main(args):
     players = []
     for i in range(2):
       players.append(Player(sock.accept()))
-      log("{}: Connection from {}".format(datetime.datetime.now().strftime("%m/%d %I:%M:%S %p"), players[i].name), "connections.log")
+      log("{}: Connection from {}".format(datetime.datetime.now().strftime("%m/%d %I:%M:%S %p"), players[i].name), "logs/connections.log")
     
     players[0].opponent = players[1]
     players[1].opponent = players[0]
@@ -48,15 +48,15 @@ def game(players):
   for i, p in enumerate(players):
     try:
       new_name = p.get_name()
-      log("{} -> {}".format(p.name, new_name), "connections.log")
+      log("{} -> {}".format(p.name, new_name), "logs/connections.log")
       p.name = new_name
     except Exception as e:
-      log("ERROR {}: {}".format(p.name, e.args[0]), "connections.log")
+      log("ERROR {}: {}".format(p.name, e.args[0]), "logs/connections.log")
       p.notify(Protocol.ERROR.format(e.args[0]))
       return
       
   #set up the logging file
-  log_file = "{}VS{}.log".format(players[0].name, players[1].name)
+  log_file = "logs/{}VS{}.log".format(players[0].name, players[1].name)
   open(log_file, "w").close()
   
   #output the names of the players
@@ -70,7 +70,7 @@ def game(players):
   players[winner].opponent.notify(Protocol.LOSE)
 
   log("WIN {}".format(winner), log_file)
-  log("{} > {}".format(players[winner].name, players[winner].opponent.name), "results.log")
+  log("{} > {}".format(players[winner].name, players[winner].opponent.name), "logs/results.log")
 
 # --------------------------------------------------
 

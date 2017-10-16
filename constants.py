@@ -1,5 +1,4 @@
-import pygame, sys
-from pygame.locals import *
+import sys
 
 NUM_ROWS = 10
 NUM_COLS = 10
