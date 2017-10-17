@@ -9,36 +9,57 @@ import random
 import socket
 import sys
 import json
+import time
+import queue
 
 # --------------------------------------------------
 
 def main(args):
-  winner = None
-  
   #setup the server
   sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
   server_address = ("0.0.0.0", args["p"])
   sock.bind(server_address)
-  
+
   sock.listen()
-  
+
+  player_queue = queue.Queue()
+
+  pt = threading.Thread(target=accept_players, args=(player_queue,sock))
+  pt.start()
+
   while True:
-    #create the players
-    players = []
-    for i in range(2):
-      players.append(Player(sock.accept()))
-      log("{}: Connection from {}".format(datetime.datetime.now().strftime("%m/%d %I:%M:%S %p"), players[i].name), "logs/connections.log")
-    
-    players[0].opponent = players[1]
-    players[1].opponent = players[0]
-    
-    #play the game in a new thread
-    t = threading.Thread(target=game, args=(players,))
-    t.start()
-  
+    #limit the number of threads
+    while threading.active_count() > 7:
+      time.sleep(.5)
+
+    #if we have enough connections,
+    if player_queue.qsize() >= 2:
+      p1 = player_queue.get()
+      p2 = player_queue.get()
+      p1.opponent = p2
+      p2.opponent = p1
+
+      players = [p1, p2]
+
+      print("Game with {}".format([p.name for p in players]))
+      
+      #play the game in a new thread
+      gt = threading.Thread(target=game, args=(players,))
+      gt.start()
+
   #finally close the server
   sock.close()
+
+# --------------------------------------------------
+
+def accept_players(player_queue, sock):
+  while True:
+    player = Player(sock.accept())
+    player_queue.put(player)
+    print("Connection from {}".format(player.name))
+
+    log("{}: Connection from {}".format(datetime.datetime.now().strftime("%m/%d %I:%M:%S %p"), player.name), "logs/connections.log")
 
 # --------------------------------------------------
 
@@ -57,7 +78,8 @@ def game(players):
       
   #set up the logging file
   log_file = "logs/{}VS{}.log".format(players[0].name, players[1].name)
-  open(log_file, "w").close()
+  with open(log_file, "w"): pass
+  log("Create log file {}".format(log_file), "logs/connections.log")
   
   #output the names of the players
   for i in range(2):
@@ -139,9 +161,8 @@ def do_turn(players, log_file):
 # --------------------------------------------------
 
 def log(msg, log_file):
-  print(msg)
   print(msg, file=open(log_file, "a"))
-  
+  #print("write {} to {}".format(msg, log_file))
 # --------------------------------------------------
 
 def get_args():

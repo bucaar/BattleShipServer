@@ -12,7 +12,7 @@ HORIZONTAL = "h"
 
 CONTINUE_AFTER_HIT = False
 
-SOCKET_TIMEOUT = 1.0
+SOCKET_TIMEOUT = 5.0
 
 class ShipState:
   UNPLACED  = 0
