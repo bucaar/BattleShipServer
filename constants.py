@@ -34,6 +34,7 @@ class Tile:
           "P": {"length": 2, "name": "Patrol Boat"}}
 
 class Protocol:
+  HANDSHAKE = "HELLO"
   NAME = "NAME"
   PLACE = "SHIP PLACEMENT"
   SHOOT = "SHOT LOCATION"
