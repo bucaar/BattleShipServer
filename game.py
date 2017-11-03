@@ -72,12 +72,12 @@ def game(players):
       log("{} -> {}".format(p.name, new_name), "logs/connections.log")
       p.name = new_name
     except Exception as e:
-      log("ERROR {}: {}".format(p.name, e.args[0]), "logs/connections.log")
       try:
         p.notify(Protocol.ERROR.format(e.args[0]))
+        log("ERROR {}: {}".format(p.name, e.args[0]), "logs/connections.log")
       except:
-        #Tried notifying of error, broken pipe.  Ignore
-        pass
+        #Tried notifying of error, broken pipe.
+        log("ERROR {}: {}".format(p.name, "Broken Connection"), "logs/connections.log")
       return
 
   #set up the logging file
@@ -117,12 +117,12 @@ def start(players, log_file):
     try:
       ship_placements.append(p.get_ship_placements())
     except Exception as e:
-      log("ERROR {}: {}".format(i, e.args[0]), log_file)
       try:
         p.notify(Protocol.ERROR.format(e.args[0]))
+        log("ERROR {}: {}".format(i, e.args[0]), log_file)
       except:
-        #Tried notifying of error, broken pipe.  Ignore
-        pass
+        #Tried notifying of error, broken pipe.
+        log("ERROR {}: {}".format(i, "Broken Connection"), log_file)
       return (i+1)%2
 
   #output the ship placements for the players
@@ -139,13 +139,12 @@ def start(players, log_file):
       for ship, placement in placements.items():
         p.board.place_ship(placement[0], placement[1], ship, placement[2])
     except Exception as e:
-      log("ERROR {}: {}".format(i, e.args[0]), log_file)
       try:
         p.notify(Protocol.ERROR.format(e.args[0]))
+        log("ERROR {}: {}".format(i, e.args[0]), log_file)
       except:
-        #Tried notifying of error, broken pipe.  Ignore
-        pass
-
+        #Tried notifying of error, broken pipe.
+        log("ERROR {}: {}".format(i, "Broken Connection"), log_file)
       return (i+1)%2
 
   while True:
@@ -175,12 +174,12 @@ def do_turn(players, log_file):
           break
 
   except Exception as e:
-    log("ERROR {}: {}".format(i, e.args[0]), log_file)
     try:
       p.notify(Protocol.ERROR.format(e.args[0]))
+      log("ERROR {}: {}".format(i, e.args[0]), log_file)
     except:
-      #Tried notifying of error, broken pipe.  Ignore
-      pass
+      #Tried notifying of error, broken pipe.
+      log("ERROR {}: {}".format(i, "Broken Connection"), log_file)
     return (i+1)%2
 
   return None
