@@ -73,7 +73,11 @@ def game(players):
       p.name = new_name
     except Exception as e:
       log("ERROR {}: {}".format(p.name, e.args[0]), "logs/connections.log")
-      p.notify(Protocol.ERROR.format(e.args[0]))
+      try:
+        p.notify(Protocol.ERROR.format(e.args[0]))
+      except:
+        #Tried notifying of error, broken pipe.  Ignore
+        pass
       return
 
   #set up the logging file
@@ -104,7 +108,11 @@ def start(players, log_file):
       ship_placements.append(p.get_ship_placements())
     except Exception as e:
       log("ERROR {}: {}".format(i, e.args[0]), log_file)
-      p.notify(Protocol.ERROR.format(e.args[0]))
+      try:
+        p.notify(Protocol.ERROR.format(e.args[0]))
+      except:
+        #Tried notifying of error, broken pipe.  Ignore
+        pass
       return (i+1)%2
 
   #output the ship placements for the players
@@ -122,7 +130,12 @@ def start(players, log_file):
         p.board.place_ship(placement[0], placement[1], ship, placement[2])
     except Exception as e:
       log("ERROR {}: {}".format(i, e.args[0]), log_file)
-      p.notify(Protocol.ERROR.format(e.args[0]))
+      try:
+        p.notify(Protocol.ERROR.format(e.args[0]))
+      except:
+        #Tried notifying of error, broken pipe.  Ignore
+        pass
+
       return (i+1)%2
 
   while True:
@@ -153,7 +166,11 @@ def do_turn(players, log_file):
 
   except Exception as e:
     log("ERROR {}: {}".format(i, e.args[0]), log_file)
-    p.notify(Protocol.ERROR.format(e.args[0]))
+    try:
+      p.notify(Protocol.ERROR.format(e.args[0]))
+    except:
+      #Tried notifying of error, broken pipe.  Ignore
+      pass
     return (i+1)%2
 
   return None
