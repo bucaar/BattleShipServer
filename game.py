@@ -92,8 +92,18 @@ def game(players):
   #start the game, return the winner
   winner = start(players, log_file)
 
-  players[winner].notify(Protocol.WIN)
-  players[winner].opponent.notify(Protocol.LOSE)
+  try:
+    players[winner].notify(Protocol.WIN)
+  except:
+    #Tried notifying of win, broken pipe.  Ignore
+    pass
+
+  try:
+    players[winner].opponent.notify(Protocol.LOSE)
+  except:
+    #Tried notifying of lose, broken pipe.  Ignore
+    pass
+
 
   log("WIN {}".format(winner), log_file)
   log("{} > {}".format(players[winner].name, players[winner].opponent.name), "logs/results.log")
