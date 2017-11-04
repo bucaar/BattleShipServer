@@ -85,9 +85,7 @@ def game(players):
   with open(log_file, "w"): pass
   log("Create log file {}".format(log_file), "logs/connections.log")
 
-  #output the names of the players
-  for i in range(2):
-    log("NAME {}: {}".format(i, players[i].name), log_file)
+  log("{} > {}".format(players[0].name, players[1].name), "logs/games.log")
 
   #start the game, return the winner
   winner = start(players, log_file)
@@ -111,6 +109,10 @@ def game(players):
 # --------------------------------------------------
 
 def start(players, log_file):
+  #output the names of the players
+  for i in range(2):
+    log("NAME {}: {}".format(i, players[i].name), log_file)
+
   #get the ship placements
   ship_placements = []
   for i, p in enumerate(players):
